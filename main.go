@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"io"
 	"bufio"
+	"strings"
+	"strconv"
 )
 
 var lineDefault = 10
@@ -49,10 +50,10 @@ func filePrint(filePath string, maxLine int, fileDisp bool) {
 func main() {
 	var maxLine int
 	var filesPath []string
-	var err error
 
 	// デフォルトの表示行数
 	maxLine = lineDefault
+
 	// 引数を取得
 	args := os.Args
 
@@ -62,19 +63,14 @@ func main() {
 	for i < len(args) {
 		// fmt.Println(lineNum)
 		arg := args[i]
-		if arg == "-n" {
-			//-nの次が数字かどうかのチェック
-			maxLine, err = strconv.Atoi(args[i+1])
-			if err == nil {
-				// -n の次の引数は行数が取得できているので飛ばす
-				i++
-			} else {
-				// -n オプションの次に、数字以外が来ている。
-				fmt.Println("head: option requires an argument -- n")
-				os.Exit(1)
-			}
+
+		// -n= で始まる引数があった場合、表示行数を取得する
+		if strings.HasPrefix(arg, "-n=") {
+
+			// 分割して表示行数を取得
+			maxLine = getLine(arg)
 		} else {
-			// スライスに追加する
+			// -n= で始まる引数以外は、スライスに追加する
 			filesPath = append(filesPath, arg)
 		}
 		i++
@@ -84,4 +80,12 @@ func main() {
 	for _, filePath := range filesPath {
 		filePrint(filePath, maxLine, len(filesPath) > 1)
 	}
+}
+func getLine(value string) (int) {
+	valueList := strings.Split(value, "=")
+	line, err := strconv.Atoi(valueList[1])
+	if err != nil {
+		panic(err)
+	}
+	return line
 }
